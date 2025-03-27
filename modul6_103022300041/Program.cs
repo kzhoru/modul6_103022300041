@@ -1,4 +1,5 @@
-﻿using System.Reflection.Metadata.Ecma335;
+﻿using System.Diagnostics;
+using System.Reflection.Metadata.Ecma335;
 using System.Security.Cryptography;
 
 public class SayaTubeVideo {
@@ -7,6 +8,8 @@ public class SayaTubeVideo {
     public string title;
 
     public SayaTubeVideo(string title) {
+
+        Debug.Assert(!string.IsNullOrEmpty(title) && title.Length <= 200, "Judul video tidak boleh null atau lebih dari 200 karakter.");
         Random random = new Random();
         this.id = random.Next(10000, 100000);
         this.title = title;
@@ -14,7 +17,19 @@ public class SayaTubeVideo {
     }
 
     public void increasePlayCount(int increment) {
-        this.playCount += increment;
+
+        Debug.Assert(!(increment<0) && increment > 0 && increment < 25000000);
+
+        try {
+            checked {
+                this.playCount += increment;
+            }
+        }
+        catch (OverflowException e)
+        {
+            Console.WriteLine("Overflow terjadi");
+        }
+        
     }
 
     public void printVideoDetails()
@@ -31,6 +46,8 @@ public class SayaTubeUser {
     private List<SayaTubeVideo> uploadVideos;
     public SayaTubeUser(string user)
     {
+
+        Debug.Assert(!string.IsNullOrEmpty(user) && user.Length <= 100, "Username tidak boleh null atau lebih dari 100 karakter.");
         Random random = new Random();
         this.id = random.Next(10000, 100000);
         this.uploadVideos = new List<SayaTubeVideo>();
@@ -48,6 +65,7 @@ public class SayaTubeUser {
     }
 
     public void addVideo(SayaTubeVideo video) {
+        Debug.Assert(video != null && video.playCount < int.MaxValue);
         this.uploadVideos.Add(video);
     }
 
@@ -62,16 +80,20 @@ public class SayaTubeUser {
 
 public class Program {
     public static void Main(string[] args) {
-        SayaTubeUser user1 = new SayaTubeUser("Adrian");
-        SayaTubeVideo film1 = new SayaTubeVideo("Spiderman 2 oleh Adrian");
-        film1.increasePlayCount(10);
-        film1.printVideoDetails();
-        SayaTubeVideo film2 = new SayaTubeVideo("Spiderman 3 oleh Adrian");
-        film2.increasePlayCount(4);
-        film2.printVideoDetails();
-        user1.addVideo(film1);
-        user1.addVideo(film2);
-        Console.WriteLine("Total video PlayCount: " + user1.getTotalVideoPlayCount());
-        user1.PrintAllVideoPlaycount();
+
+        try {
+            SayaTubeVideo film1 = new SayaTubeVideo("Spiderman 8");
+            SayaTubeUser user1 = new SayaTubeUser("Adrian");
+            for (int i = 0; i < 10; i++)
+            {
+                film1.increasePlayCount(25000000);
+            }
+            film1.printVideoDetails();
+        } 
+        catch(Exception e)
+        {
+            Console.WriteLine("Terjadi Error: " + e.Message);
+        }
+
     }
 }
